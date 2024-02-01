@@ -1,39 +1,65 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Vehicule.h"
 #include "Math/UnrealMathUtility.h"
 
-// Sets default values
-AVehicule::AVehicule()
-{
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+AVehicule::AVehicule() : mass(1), velocity(0), max_force(10), max_speed(10) {
 	PrimaryActorTick.bCanEverTick = true;
-
-}
-
-// Called when the game starts or when spawned
-void AVehicule::BeginPlay()
-{
-	Super::BeginPlay();
 	
 }
 
-// Called every frame
-void AVehicule::Tick(float DeltaTime)
-{
+void AVehicule::BeginPlay() {
+	Super::BeginPlay();
+	position = this->GetActorLocation();
+	UE_LOG(LogTemp, Warning, TEXT("GetActorLocation : %s"), *(this->GetActorLocation()).ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Position : %s"), *position.ToString());
+	
+}
+
+void AVehicule::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 }
 
-// Called to bind functionality to input
 void AVehicule::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
 
-float AVehicule::truncate(FVector v, float value) {
-	return FMath::Min(v.Size(), value);
+FVector AVehicule::truncate(FVector v, float value) {
+	if (v.Size() > value) {
+		//UE_LOG(LogTemp, Warning, TEXT("New velocity : %s"), *(v.GetSafeNormal() * value).ToString());
+		return v.GetSafeNormal() * value;
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("New velocity : %s"), *(v).ToString());
+	return v;
 }
+
+void AVehicule::calculateNewPosition(FVector steering_direction) {
+	FVector steering_force = truncate(steering_direction, max_force);
+	FVector acceleration = steering_force / mass;
+	velocity = truncate(velocity + acceleration, max_speed);
+	position = position + velocity;
+}
+
+void AVehicule::caculateNewOrientation() {
+
+	/*
+		new_forward = normalize(velocity);
+		approximate_up = normalize(approximate_up); // if needed
+		new_side = cross(new_forward, approximate_up);
+		new_up = cross(new_forward, new_side);
+	*/
+}
+
+
+
+void AVehicule::seek(AActor *target) {
+	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * max_speed;
+	FVector steering = desired_velocity - velocity;
+
+	calculateNewPosition(steering);
+	this->SetActorLocation(position);
+}
+
+
 

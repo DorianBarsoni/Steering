@@ -7,33 +7,44 @@
 #include "Math/Vector.h"
 #include "Vehicule.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class STEERING_API AVehicule : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditAnywhere)
 	float mass;
 	FVector position;
+	UPROPERTY(EditAnywhere)
 	FVector velocity;
+	UPROPERTY(EditAnywhere)
 	FMatrix orientation;
-	float max_force, max_speed;
+	UPROPERTY(EditAnywhere)
+	float max_force;
+	UPROPERTY(EditAnywhere)
+	int max_speed;
 
 public:
-	// Sets default values for this character's properties
 	AVehicule();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	float truncate(FVector v, float value);
+	FVector truncate(FVector v, float value);
 
+	UFUNCTION()
+	void calculateNewPosition(FVector steering_direction);
+
+	UFUNCTION()
+	void caculateNewOrientation();
+
+	UFUNCTION(BlueprintCallable)
+	void seek(AActor *target);
 };
