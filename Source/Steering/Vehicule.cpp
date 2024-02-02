@@ -65,8 +65,12 @@ void AVehicule::seek(AActor *target) {
 
 	this->SetActorLocation(position);
 	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
-	UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta * 180 / PI);
-	this->SetActorRotation(FRotator(0, theta * 180 / PI, 0));
+	theta = theta * 180 / PI;
+	if (orientation.GetColumn(0).Y < 0) {
+		theta *= -1;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
+	this->SetActorRotation(FRotator(0, theta, 0));
 }
 
 
