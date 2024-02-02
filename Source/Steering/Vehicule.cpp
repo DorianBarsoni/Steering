@@ -69,7 +69,24 @@ void AVehicule::seek(AActor *target) {
 	if (orientation.GetColumn(0).Y < 0) {
 		theta *= -1;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
+	//UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
+	this->SetActorRotation(FRotator(0, theta, 0));
+}
+
+void AVehicule::flee(AActor* target) {
+	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * -max_speed;
+	FVector steering = desired_velocity - velocity;
+
+	calculateNewPosition(steering);
+	caculateNewOrientation();
+
+	this->SetActorLocation(position);
+	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
+	theta = theta * 180 / PI;
+	if (orientation.GetColumn(0).Y < 0) {
+		theta *= -1;
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
 	this->SetActorRotation(FRotator(0, theta, 0));
 }
 

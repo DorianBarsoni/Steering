@@ -47,4 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void seek(AActor *target);
+
+	UFUNCTION(BlueprintCallable)
+	void flee(AActor* target);
 };
