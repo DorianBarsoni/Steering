@@ -53,4 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void pursuit(AVehicule *target, float c);
+
+	UFUNCTION(BlueprintCallable)
+	void evade(AVehicule* target, float c);
 };

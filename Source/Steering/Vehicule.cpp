@@ -86,7 +86,6 @@ void AVehicule::flee(AActor* target) {
 	if (orientation.GetColumn(0).Y < 0) {
 		theta *= -1;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
 	this->SetActorRotation(FRotator(0, theta, 0));
 }
 
@@ -108,7 +107,27 @@ void AVehicule::pursuit(AVehicule *target, float c) {
 	if (orientation.GetColumn(0).Y < 0) {
 		theta *= -1;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
+	this->SetActorRotation(FRotator(0, theta, 0));
+}
+
+void AVehicule::evade(AVehicule* target, float c) {
+	float distance = (GetActorLocation() - target->GetActorLocation()).Size() / 100.0;
+	UE_LOG(LogTemp, Warning, TEXT("Distance entre objets : %f"), distance);
+
+	FVector furtur_location = target->GetActorLocation() + target->velocity * distance * c;
+
+	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * -max_speed;
+	FVector steering = desired_velocity - velocity;
+
+	calculateNewPosition(steering);
+	caculateNewOrientation();
+
+	this->SetActorLocation(position);
+	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
+	theta = theta * 180 / PI;
+	if (orientation.GetColumn(0).Y < 0) {
+		theta *= -1;
+	}
 	this->SetActorRotation(FRotator(0, theta, 0));
 }
 
