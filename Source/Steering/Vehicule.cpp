@@ -96,5 +96,26 @@ void AVehicule::evade(AVehicule* target, float c) {
 	updatePositionAndRotationAccordingToSteering(steering);
 }
 
+void AVehicule::arrival(AActor *target, float slowing_distance) {
+	FVector target_offset = target->GetActorLocation() - GetActorLocation();
+	float distance = target_offset.Size() / 100.0;
+	float ramped_speed = max_speed * (distance / slowing_distance);
+	float clipped_speed = FMath::Min(ramped_speed, max_speed);
+
+	FVector desired_velocity = (clipped_speed / distance) * target_offset;
+	FVector steering = desired_velocity - velocity;
+
+	updatePositionAndRotationAccordingToSteering(steering);
+
+	/*
+	target_offset = target - position ;
+	distance = length ( target_offset );
+	ramped_speed = max_speed * ( distance / slowing_distance );
+	clipped_speed = minimum ( ramped_speed , max_speed );
+	desired_velocity = ( clipped_speed / distance ) * target_offset ;
+	steering = desired_velocity - velocity ;
+	*/
+}
+
 
 

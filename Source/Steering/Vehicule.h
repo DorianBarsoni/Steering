@@ -60,4 +60,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void evade(AVehicule* target, float c);
+
+	UFUNCTION(BlueprintCallable)
+	void arrival(AActor *target, float slowing_distance);
 };
