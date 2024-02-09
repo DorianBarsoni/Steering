@@ -49,5 +49,8 @@ public:
 	void seek(AActor *target);
 
 	UFUNCTION(BlueprintCallable)
-	void flee(AActor* target);
+	void flee(AActor *target);
+
+	UFUNCTION(BlueprintCallable)
+	void pursuit(AVehicule *target, float c);
 };
