@@ -31,12 +31,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
+private:
+	UFUNCTION()
 	FVector truncate(FVector v, float value);
 
 	UFUNCTION()
@@ -44,6 +40,14 @@ public:
 
 	UFUNCTION()
 	void caculateNewOrientation();
+
+	UFUNCTION()
+	void updatePositionAndRotationAccordingToSteering(FVector steering);
+
+public:	
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
 	void seek(AActor *target);

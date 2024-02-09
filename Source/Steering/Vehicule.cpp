@@ -11,8 +11,6 @@ AVehicule::AVehicule() : mass(1), velocity(0), max_force(10), max_speed(10) {
 void AVehicule::BeginPlay() {
 	Super::BeginPlay();
 	position = this->GetActorLocation();
-	//UE_LOG(LogTemp, Warning, TEXT("GetActorLocation : %s"), *(this->GetActorLocation()).ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("Position : %s"), *position.ToString());
 	
 }
 
@@ -29,7 +27,6 @@ void AVehicule::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 FVector AVehicule::truncate(FVector v, float value) {
 	if (v.Size() > value) {
-		//UE_LOG(LogTemp, Warning, TEXT("New velocity : %s"), *(v.GetSafeNormal() * value).ToString());
 		return v.GetSafeNormal() * value;
 	}
 	//UE_LOG(LogTemp, Warning, TEXT("New velocity : %s"), *(v).ToString());
@@ -44,22 +41,10 @@ void AVehicule::calculateNewPosition(FVector steering_direction) {
 }
 
 void AVehicule::caculateNewOrientation() {
-	//UE_LOG(LogTemp, Warning, TEXT("Velocity : %s"), *(velocity).ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("Velocity normal : %s"), *(velocity.GetSafeNormal()).ToString());
 	orientation.SetColumn(0, velocity.GetSafeNormal());
-	//UE_LOG(LogTemp, Warning, TEXT("Column 0 : %s"), *(orientation.GetColumn(0)).ToString());
-	/*
-		new_forward = normalize(velocity);
-		approximate_up = normalize(approximate_up); // if needed
-		new_side = cross(new_forward, approximate_up);
-		new_up = cross(new_forward, new_side);
-	*/
 }
 
-void AVehicule::seek(AActor *target) {
-	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * max_speed;
-	FVector steering = desired_velocity - velocity;
-
+void AVehicule::updatePositionAndRotationAccordingToSteering(FVector steering) {
 	calculateNewPosition(steering);
 	caculateNewOrientation();
 
@@ -73,20 +58,18 @@ void AVehicule::seek(AActor *target) {
 	this->SetActorRotation(FRotator(0, theta, 0));
 }
 
+void AVehicule::seek(AActor *target) {
+	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * max_speed;
+	FVector steering = desired_velocity - velocity;
+
+	updatePositionAndRotationAccordingToSteering(steering);
+}
+
 void AVehicule::flee(AActor* target) {
 	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * -max_speed;
 	FVector steering = desired_velocity - velocity;
 
-	calculateNewPosition(steering);
-	caculateNewOrientation();
-
-	this->SetActorLocation(position);
-	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
-	theta = theta * 180 / PI;
-	if (orientation.GetColumn(0).Y < 0) {
-		theta *= -1;
-	}
-	this->SetActorRotation(FRotator(0, theta, 0));
+	updatePositionAndRotationAccordingToSteering(steering);
 }
 
 void AVehicule::pursuit(AVehicule *target, float c) {
@@ -98,16 +81,7 @@ void AVehicule::pursuit(AVehicule *target, float c) {
 	FVector desired_velocity = (furtur_location - this->GetActorLocation()).GetSafeNormal() * max_speed;
 	FVector steering = desired_velocity - velocity;
 
-	calculateNewPosition(steering);
-	caculateNewOrientation();
-
-	this->SetActorLocation(position);
-	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
-	theta = theta * 180 / PI;
-	if (orientation.GetColumn(0).Y < 0) {
-		theta *= -1;
-	}
-	this->SetActorRotation(FRotator(0, theta, 0));
+	updatePositionAndRotationAccordingToSteering(steering);
 }
 
 void AVehicule::evade(AVehicule* target, float c) {
@@ -119,16 +93,7 @@ void AVehicule::evade(AVehicule* target, float c) {
 	FVector desired_velocity = (target->GetActorLocation() - this->GetActorLocation()).GetSafeNormal() * -max_speed;
 	FVector steering = desired_velocity - velocity;
 
-	calculateNewPosition(steering);
-	caculateNewOrientation();
-
-	this->SetActorLocation(position);
-	float theta = UKismetMathLibrary::Acos(orientation.GetColumn(0).X);
-	theta = theta * 180 / PI;
-	if (orientation.GetColumn(0).Y < 0) {
-		theta *= -1;
-	}
-	this->SetActorRotation(FRotator(0, theta, 0));
+	updatePositionAndRotationAccordingToSteering(steering);
 }
 
 
