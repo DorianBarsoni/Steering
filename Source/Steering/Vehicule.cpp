@@ -128,10 +128,40 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 			
 			index++;
 			reaching_target = targets[index % targets.Num()];
-		}
-			
+		}	
 	}
-	
+}
+
+void AVehicule::OneWay(TArray<AActor*> targets) {
+	if (!targets.IsEmpty()) {
+		if (!reaching_target) {
+			reaching_target = targets[0];
+		}
+
+		int index = -1;
+		for (int i = 0; i < targets.Num(); ++i) {
+			if (targets[i] == reaching_target) {
+				index = i;
+				break;
+			}
+		}
+
+		if (index == targets.Num() - 1) {
+			arrival(reaching_target, 1000);
+		}
+		else {
+			seek(reaching_target);
+
+			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
+				index++;
+				reaching_target = targets[index % targets.Num()];
+			}
+		}
+	}
+}
+
+void AVehicule::TwoWays(TArray<AActor*> targets) {
+
 }
 
 

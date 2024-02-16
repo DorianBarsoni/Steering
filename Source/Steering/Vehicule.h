@@ -69,4 +69,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void circuit(TArray<AActor*> targets);
+
+	UFUNCTION(BlueprintCallable)
+	void OneWay(TArray<AActor*> targets);
+
+	UFUNCTION(BlueprintCallable)
+	void TwoWays(TArray<AActor*> targets);
 };
