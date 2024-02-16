@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	int max_speed;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor *reaching_target;
+
 public:
 	AVehicule();
 
@@ -63,4 +66,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void arrival(AActor *target, float slowing_distance);
+
+	UFUNCTION(BlueprintCallable)
+	void circuit(TArray<AActor*> targets);
 };

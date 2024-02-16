@@ -54,7 +54,6 @@ void AVehicule::updatePositionAndRotationAccordingToSteering(FVector steering) {
 	if (orientation.GetColumn(0).Y < 0) {
 		theta *= -1;
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("angle : %f"), theta);
 	this->SetActorRotation(FRotator(0, theta, 0));
 }
 
@@ -98,7 +97,8 @@ void AVehicule::evade(AVehicule* target, float c) {
 
 void AVehicule::arrival(AActor *target, float slowing_distance) {
 	FVector target_offset = target->GetActorLocation() - GetActorLocation();
-	float distance = target_offset.Size() / 100.0;
+	float distance = target_offset.Size();
+
 	float ramped_speed = max_speed * (distance / slowing_distance);
 	float clipped_speed = FMath::Min(ramped_speed, max_speed);
 
@@ -106,15 +106,32 @@ void AVehicule::arrival(AActor *target, float slowing_distance) {
 	FVector steering = desired_velocity - velocity;
 
 	updatePositionAndRotationAccordingToSteering(steering);
+}
 
-	/*
-	target_offset = target - position ;
-	distance = length ( target_offset );
-	ramped_speed = max_speed * ( distance / slowing_distance );
-	clipped_speed = minimum ( ramped_speed , max_speed );
-	desired_velocity = ( clipped_speed / distance ) * target_offset ;
-	steering = desired_velocity - velocity ;
-	*/
+void AVehicule::circuit(TArray<AActor*> targets) {
+	if (!targets.IsEmpty()) {
+		if (!reaching_target) {
+			reaching_target = targets[0];
+		}
+
+		seek(reaching_target);
+
+		if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
+
+			int index = -1;
+			for (int i = 0; i < targets.Num(); ++i) {
+				if (targets[i] == reaching_target) {
+					index = i;
+					break;
+				}
+			}
+			
+			index++;
+			reaching_target = targets[index % targets.Num()];
+		}
+			
+	}
+	
 }
 
 
