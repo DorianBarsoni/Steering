@@ -47,6 +47,8 @@ private:
 	UFUNCTION()
 	void updatePositionAndRotationAccordingToSteering(FVector steering);
 
+	bool SwitchWay;
+
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -71,7 +73,10 @@ public:
 	void circuit(TArray<AActor*> targets);
 
 	UFUNCTION(BlueprintCallable)
-	void OneWay(TArray<AActor*> targets);
+	bool OneWay(TArray<AActor*> targets);
+
+	UFUNCTION(BlueprintCallable)
+	bool ReverseWay(TArray<AActor*> targets);
 
 	UFUNCTION(BlueprintCallable)
 	void TwoWays(TArray<AActor*> targets);

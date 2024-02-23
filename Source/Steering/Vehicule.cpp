@@ -5,6 +5,7 @@
 
 AVehicule::AVehicule() : mass(1), velocity(0), max_force(10), max_speed(10) {
 	PrimaryActorTick.bCanEverTick = true;
+	SwitchWay = false;
 	
 }
 
@@ -132,7 +133,7 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 	}
 }
 
-void AVehicule::OneWay(TArray<AActor*> targets) {
+bool AVehicule::OneWay(TArray<AActor*> targets) {
 	if (!targets.IsEmpty()) {
 		if (!reaching_target) {
 			reaching_target = targets[0];
@@ -148,19 +149,61 @@ void AVehicule::OneWay(TArray<AActor*> targets) {
 
 		if (index == targets.Num() - 1) {
 			arrival(reaching_target, 1000);
+			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100)
+				return true;
 		}
 		else {
 			seek(reaching_target);
 
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
 				index++;
-				reaching_target = targets[index % targets.Num()];
+				reaching_target = targets[index];
 			}
 		}
+		return false;
 	}
+	return true;
+}
+
+bool AVehicule::ReverseWay(TArray<AActor*> targets) {
+	if (!targets.IsEmpty()) {
+		if (!reaching_target) {
+			reaching_target = targets[targets.Num() - 1];
+		}
+
+		int index = -1;
+		for (int i = 0; i < targets.Num(); ++i) {
+			if (targets[i] == reaching_target) {
+				index = i;
+				break;
+			}
+		}
+
+		if (index == 0) {
+			arrival(reaching_target, 1000);
+			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100)
+				return true;
+		}
+		else {
+			seek(reaching_target);
+
+			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
+				index--;
+				reaching_target = targets[index];
+			}
+		}
+		return false;
+	}
+	return true;
 }
 
 void AVehicule::TwoWays(TArray<AActor*> targets) {
+	if (!SwitchWay) {
+		SwitchWay = OneWay(targets);
+	}
+	else {
+		SwitchWay = !ReverseWay(targets);
+	}
 
 }
 
