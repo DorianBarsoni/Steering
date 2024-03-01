@@ -1,34 +1,55 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CameraPlayerPawn.h"
 
-// Sets default values
 ACameraPlayerPawn::ACameraPlayerPawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
 void ACameraPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void ACameraPlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-// Called to bind functionality to input
 void ACameraPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ACameraPlayerPawn::CreateTarget() {
+    FHitResult HitResult;
+    TraceLineFromCameraToMousePosition(HitResult, true);
+
+    FVector Location = HitResult.ImpactPoint;
+
+    GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f %f %f"), Location.X, Location.Y, Location.Z));
+}
+
+bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult, bool showHit) {
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+
+    FVector MouseWorldPosition, MouseWorldDirection;
+    PlayerController->DeprojectMousePositionToWorld(MouseWorldPosition, MouseWorldDirection);
+    FVector Direction = MouseWorldPosition + 10000.0 * MouseWorldDirection;
+
+    FCollisionQueryParams CollisionParams;
+    CollisionParams.AddIgnoredActor(this);
+    CollisionParams.AddIgnoredActor(GetController());
+
+    if (GetWorld()->LineTraceSingleByChannel(HitResult, MouseWorldPosition, Direction, ECC_Pawn, CollisionParams)) {
+        if (showHit) {
+            DrawDebugLine(GetWorld(), MouseWorldPosition, Direction, FColor::Red, false, 5.0f, 0, 0.1f);
+        }
+        return true;
+    }
+    return false;
 }
 
