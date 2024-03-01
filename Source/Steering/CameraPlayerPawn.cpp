@@ -1,9 +1,12 @@
 #include "CameraPlayerPawn.h"
 #include "LandscapeProxy.h"
 
+FActorSpawnParameters SpawnParams;
+
 ACameraPlayerPawn::ACameraPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 }
 
@@ -27,12 +30,10 @@ void ACameraPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ACameraPlayerPawn::CreateTarget() {
     FHitResult HitResult;
-    bool res = TraceLineFromCameraToMousePosition(HitResult, true);
-
-    FVector Location = HitResult.ImpactPoint;
-
-    if (res) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f %f %f"), Location.X, Location.Y, Location.Z));
-    if (res) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, HitResult.GetActor()->GetName());
+    if (TraceLineFromCameraToMousePosition(HitResult, true)) {
+        FVector Location = HitResult.ImpactPoint;
+        GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams);
+    }
 }
 
 bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult, bool showHit) {
@@ -40,7 +41,7 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
 
     FVector MouseWorldPosition, MouseWorldDirection;
     PlayerController->DeprojectMousePositionToWorld(MouseWorldPosition, MouseWorldDirection);
-    FVector Direction = MouseWorldPosition + 10000.0 * MouseWorldDirection;
+    FVector Direction = MouseWorldPosition + 20000.0 * MouseWorldDirection;
 
     FCollisionQueryParams CollisionParams;
     CollisionParams.AddIgnoredActor(this);
@@ -51,8 +52,11 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
 
     if (GetWorld()->LineTraceSingleByObjectType(HitResult, MouseWorldPosition, Direction, ObjectParams, CollisionParams)) {
         if (showHit && HitResult.GetActor() && HitResult.GetActor()->IsA<ALandscapeProxy>()) {
-            DrawDebugLine(GetWorld(), MouseWorldPosition, Direction, FColor::Red, false, 5.0f, 0, 0.1f);
+            DrawDebugLine(GetWorld(), MouseWorldPosition, Direction, FColor::Red, true, 5.0f, 0, 0.1f);
             return true;
+        }
+        else {
+            GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, HitResult.GetActor()->GetName());
         }
     }
     return false;

@@ -12,6 +12,9 @@ class STEERING_API ACameraPlayerPawn : public APawn
 public:
 	ACameraPlayerPawn();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> TargetToSpawn;
+
 protected:
 	virtual void BeginPlay() override;
 
