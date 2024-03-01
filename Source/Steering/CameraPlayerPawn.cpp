@@ -1,4 +1,5 @@
 #include "CameraPlayerPawn.h"
+#include "LandscapeProxy.h"
 
 ACameraPlayerPawn::ACameraPlayerPawn()
 {
@@ -26,11 +27,12 @@ void ACameraPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ACameraPlayerPawn::CreateTarget() {
     FHitResult HitResult;
-    TraceLineFromCameraToMousePosition(HitResult, true);
+    bool res = TraceLineFromCameraToMousePosition(HitResult, true);
 
     FVector Location = HitResult.ImpactPoint;
 
-    GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f %f %f"), Location.X, Location.Y, Location.Z));
+    if (res) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f %f %f"), Location.X, Location.Y, Location.Z));
+    if (res) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, HitResult.GetActor()->GetName());
 }
 
 bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult, bool showHit) {
@@ -44,11 +46,14 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
     CollisionParams.AddIgnoredActor(this);
     CollisionParams.AddIgnoredActor(GetController());
 
-    if (GetWorld()->LineTraceSingleByChannel(HitResult, MouseWorldPosition, Direction, ECC_Pawn, CollisionParams)) {
-        if (showHit) {
+    FCollisionObjectQueryParams ObjectParams;
+    ObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
+
+    if (GetWorld()->LineTraceSingleByObjectType(HitResult, MouseWorldPosition, Direction, ObjectParams, CollisionParams)) {
+        if (showHit && HitResult.GetActor() && HitResult.GetActor()->IsA<ALandscapeProxy>()) {
             DrawDebugLine(GetWorld(), MouseWorldPosition, Direction, FColor::Red, false, 5.0f, 0, 0.1f);
+            return true;
         }
-        return true;
     }
     return false;
 }
