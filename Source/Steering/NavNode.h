@@ -20,7 +20,7 @@ public:
 
 	ANavNode* Predecesor = nullptr;
 
-	float Cost = 0;
+	float Cost = -1;
 
 protected:
 	virtual void BeginPlay() override;
