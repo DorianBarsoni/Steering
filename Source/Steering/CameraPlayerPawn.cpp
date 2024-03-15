@@ -1,19 +1,33 @@
 #include "CameraPlayerPawn.h"
 #include "LandscapeProxy.h"
+#include "Kismet/GameplayStatics.h"
 
 FActorSpawnParameters SpawnParams;
 
 ACameraPlayerPawn::ACameraPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 }
 
 void ACameraPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), VehiculeType, FoundActors);
+
+    for (AActor* FoundActor : FoundActors) {
+        if (AVehicule* Vehicule = Cast<AVehicule>(FoundActor)) {
+            Vehicules.Add(Vehicule);
+        }
+    }
+
+    AActor* Actor;
+    Actor = UGameplayStatics::GetActorOfClass(GetWorld(), BPNav);
+    Nav = Cast<ANavigation>(Actor);
+    if(!Nav) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Navigation not set in Player");
 }
 
 void ACameraPlayerPawn::Tick(float DeltaTime)
@@ -32,7 +46,8 @@ void ACameraPlayerPawn::CreateTarget() {
     FHitResult HitResult;
     if (TraceLineFromCameraToMousePosition(HitResult, true)) {
         FVector Location = HitResult.ImpactPoint;
-        GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams);
+        TargetsSpawned.Add(GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams));
+        SetVehiculesTargets();
     }
 }
 
@@ -60,5 +75,53 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
         }
     }
     return false;
+}
+
+void ACameraPlayerPawn::SetVehiculesTargets() {
+    for (auto Vehicule : Vehicules) {
+        ANavNode* ClosestNode;
+        if (PathToFollow.IsEmpty()) {
+            ClosestNode = NearestNode(Vehicule->GetActorLocation());
+        }
+        else {
+            ClosestNode = NearestNode(PathToFollow.Last()->GetActorLocation());
+        }
+         
+
+        //Il faut séparer le trouvage de chemin quand on ajoute un point du chemin initial
+
+        for (auto Target : TargetsSpawned) {
+            ANavNode* ClosestNodeToTarget = NearestNode(Target->GetActorLocation());
+
+            TArray<ANavNode*> AStarPath = Nav->AStar(ClosestNode, ClosestNodeToTarget);
+
+            for (AActor* Node : AStarPath) {
+                PathToFollow.Add(Node);
+            }
+            PathToFollow.Add(Target);
+
+            ClosestNode = ClosestNodeToTarget;
+        }
+        //Vehicule->TargetsToFollow = PathToFollow;
+    }
+}
+
+ANavNode* ACameraPlayerPawn::NearestNode(FVector Location) {
+    ANavNode* NNode = nullptr;
+
+    if (Nav && !Nav->Nodes.IsEmpty()) {
+        NNode = Nav->Nodes[0];
+        for (auto Node : Nav->Nodes) {
+            if (IsCloserThan(Location, NNode->GetActorLocation(), Node->GetActorLocation())) {
+                NNode = Node;
+            }
+        }
+    }
+
+    return NNode;
+}
+
+bool ACameraPlayerPawn::IsCloserThan(FVector Vehicule, FVector ActualNearestNode, FVector Node) {
+    return FVector::DistSquared(Vehicule, Node) < FVector::DistSquared(Vehicule, ActualNearestNode);
 }
 

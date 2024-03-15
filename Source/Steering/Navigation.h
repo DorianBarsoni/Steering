@@ -13,6 +13,9 @@ class STEERING_API ANavigation : public AActor
 public:	
 	ANavigation();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ANavNode*> Nodes;
+
 protected:
 	virtual void BeginPlay() override;
 

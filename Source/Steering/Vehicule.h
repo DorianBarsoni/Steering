@@ -26,6 +26,9 @@ public:
 	int max_speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<AActor*> TargetsToFollow;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor *reaching_target;
 
 public:
@@ -79,5 +82,5 @@ public:
 	bool ReverseWay(TArray<AActor*> targets);
 
 	UFUNCTION(BlueprintCallable)
-	void TwoWays(TArray<AActor*> targets);
+	void TwoWays();
 };

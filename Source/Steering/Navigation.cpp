@@ -1,4 +1,5 @@
 #include "Navigation.h"
+#include "Kismet/GameplayStatics.h"
 
 ANavigation::ANavigation()
 {
@@ -9,6 +10,15 @@ ANavigation::ANavigation()
 void ANavigation::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANavNode::StaticClass(), FoundActors);
+
+	for (AActor* FoundActor : FoundActors) {
+		if (ANavNode* Node = Cast<ANavNode>(FoundActor)) {
+			Nodes.Add(Node);
+		}
+	}
 	
 }
 
@@ -39,13 +49,13 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 	}
 
 	ANavNode* CurrentNode = End;
-	FString Way = End->Name;
 	TArray<ANavNode*> Path;
 	Path.Add(End);
+	FString Way = Path[0]->Name;
 	while (CurrentNode != Start) {
 		CurrentNode = CurrentNode->Predecesor;
 		Path.Insert(CurrentNode, 0);
-		Way = CurrentNode->Name + " -> " + Way;
+		Way = Path[0]->Name + " -> " + Way;
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Way);

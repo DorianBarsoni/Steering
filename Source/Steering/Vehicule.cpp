@@ -193,14 +193,15 @@ bool AVehicule::ReverseWay(TArray<AActor*> targets) {
 	return true;
 }
 
-void AVehicule::TwoWays(TArray<AActor*> targets) {
-	if (!SwitchWay) {
-		SwitchWay = OneWay(targets);
+void AVehicule::TwoWays() {
+	if (!TargetsToFollow.IsEmpty()) {
+		if (!SwitchWay) {
+			SwitchWay = OneWay(TargetsToFollow);
+		}
+		else {
+			SwitchWay = !ReverseWay(TargetsToFollow);
+		}
 	}
-	else {
-		SwitchWay = !ReverseWay(targets);
-	}
-
 }
 
 
