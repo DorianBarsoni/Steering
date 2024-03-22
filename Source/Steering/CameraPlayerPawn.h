@@ -32,8 +32,6 @@ public:
 
 	ANavigation* Nav;
 
-	TArray<AActor*> PathToFollow;
-
 protected:
 	virtual void BeginPlay() override;
 

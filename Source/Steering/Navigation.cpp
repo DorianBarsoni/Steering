@@ -19,7 +19,6 @@ void ANavigation::BeginPlay()
 			Nodes.Add(Node);
 		}
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), Nodes.Num()));
 
 	if (ShowGraph) {
 		DrawGraph();
@@ -47,7 +46,18 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 		if (NodeToProcess != End) {
 			for (auto Neighbor : NodeToProcess->LinkedNodes) {
 				if (Neighbor->Cost == -1 || CalculateCost(NodeToProcess, Neighbor, End) < Neighbor->Cost) {
-					Neighbor->Cost = NodeToProcess->Cost + SquaredDistanceBetweenTwoNodes(NodeToProcess, Neighbor);
+
+					UE_LOG(LogTemp, Warning, TEXT("Node %s : %f"), *NodeToProcess->Name, NodeToProcess->Cost);
+	
+					UE_LOG(LogTemp, Warning, TEXT("Neighbor %s : %f"), *Neighbor->Name, Neighbor->Cost);
+
+					UE_LOG(LogTemp, Warning, TEXT("Calcul %f"), CalculateCost(NodeToProcess, Neighbor, End));
+
+					if (CalculateCost(NodeToProcess, Neighbor, End) < Neighbor->Cost) {
+						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Plus petit");
+					}
+					
+					Neighbor->Cost = NodeToProcess->Cost + (NodeToProcess->GetActorLocation() - Neighbor->GetActorLocation()).Size();//SquaredDistanceBetweenTwoNodes(NodeToProcess, Neighbor);
 					Neighbor->Predecesor = NodeToProcess;
 					NodesToProcess.Add(Neighbor);
 				}
@@ -58,19 +68,19 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 	ANavNode* CurrentNode = End;
 	TArray<ANavNode*> Path;
 	Path.Add(End);
-	//FString Way = Path[0]->Name;
+	FString Way = Path[0]->Name;
 	while (CurrentNode != Start) {
 		CurrentNode = CurrentNode->Predecesor;
 		Path.Insert(CurrentNode, 0);
-		//Way = Path[0]->Name + " -> " + Way;
+		Way = Path[0]->Name + " -> " + Way;
 	}
 
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Way);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Way);
 	return Path;
 }
 
 float ANavigation::SquaredDistanceBetweenTwoNodes(ANavNode* Node1, ANavNode* Node2) {
-	return FVector::DistSquared(Node1->GetActorLocation(), Node2->GetActorLocation());
+	return (Node1->GetActorLocation() - Node2->GetActorLocation()).Size();//FVector::DistSquared(Node1->GetActorLocation(), Node2->GetActorLocation());
 }
 
 float ANavigation::Heuristic(ANavNode* Node1, ANavNode* Node2) {
@@ -78,7 +88,7 @@ float ANavigation::Heuristic(ANavNode* Node1, ANavNode* Node2) {
 }
 
 float ANavigation::CalculateCost(ANavNode* Node1, ANavNode* Node2, ANavNode* End) {
-	return Node1->Cost + SquaredDistanceBetweenTwoNodes(Node1, Node2) + Heuristic(Node2, End);
+	return Node1->Cost + SquaredDistanceBetweenTwoNodes(Node1, Node2);// + Heuristic(Node2, End);
 }
 
 void ANavigation::ResetNodeCostAndPredecessor() {

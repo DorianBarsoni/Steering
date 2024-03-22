@@ -122,10 +122,6 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 		seek(reaching_target);
 
 		if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
-			if (reaching_target->IsA<AVehicule>()) {
-				HasReachedFirstTarget = true;
-			}
-
 			ReachingTargetIndex++;
 			reaching_target = targets[ReachingTargetIndex % targets.Num()];
 		}	
@@ -141,8 +137,11 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 
 		if (ReachingTargetIndex == targets.Num() - 1) {
 			arrival(reaching_target, 1000);
-			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100)
+			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
+				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("OMG JE SUIS AU DEPART"));
+				HasReachedFirstTarget = true;
 				return true;
+			}
 		}
 		else {
 			seek(reaching_target);
@@ -214,6 +213,7 @@ void AVehicule::Move() {
 						circuit(TargetsToFollow);
 					}
 					else {
+						GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Direction le départ"));
 						HasReachedFirstTarget = OneWay(PathToFirstTarget);
 					}
 					break;
