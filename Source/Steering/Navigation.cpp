@@ -19,6 +19,11 @@ void ANavigation::BeginPlay()
 			Nodes.Add(Node);
 		}
 	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), Nodes.Num()));
+
+	if (ShowGraph) {
+		DrawGraph();
+	}
 	
 }
 
@@ -29,6 +34,8 @@ void ANavigation::Tick(float DeltaTime)
 }
 
 TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
+	ResetNodeCostAndPredecessor();
+
 	TArray<ANavNode*> NodesToProcess;
 	NodesToProcess.Add(Start);
 	Start->Predecesor = Start;
@@ -73,5 +80,21 @@ float ANavigation::Heuristic(FVector Point1, FVector Point2) {
 float ANavigation::CalculateCost(ANavNode* Node1, ANavNode* Node2) {
 	return /*Heuristic(Node1->GetActorLocation(), Node2->GetActorLocation()) +*/
 		SquaredDistanceBetweenTwoPoints(Node1->GetActorLocation(), Node2->GetActorLocation());
+}
+
+void ANavigation::ResetNodeCostAndPredecessor() {
+	for (ANavNode* Node : Nodes) {
+		Node->Cost = -1;
+		Node->Predecesor = nullptr;
+	}
+}
+
+void ANavigation::DrawGraph() {
+	for (ANavNode* Node : Nodes) {
+		DrawDebugSphere(GetWorld(), Node->GetActorLocation(), 60.0f, 10, FColor::Cyan, true);
+		for (ANavNode* Neighbour : Node->LinkedNodes) {
+			DrawDebugLine(GetWorld(), Node->GetActorLocation(), Neighbour->GetActorLocation(), FColor::Green, true, 1.0, 0U, 10.0f);
+		}
+	}
 }
 

@@ -45,13 +45,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateTarget();
 
-	bool TraceLineFromCameraToMousePosition(FHitResult& HitResult, bool showHit);
+	bool TraceLineFromCameraToMousePosition(FHitResult& HitResult);
 
 	void SetVehiculesTargets();
+
+	void FindOnePointPath();
 
 private:
 	ANavNode* NearestNode(FVector Location);
 
 	bool IsCloserThan(FVector Vehicule, FVector ActualNearestNode, FVector Node);
+
+	void ClearTargetsSpawned();
 
 };

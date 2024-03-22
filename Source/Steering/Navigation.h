@@ -25,11 +25,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<ANavNode*> AStar(ANavNode* Start, ANavNode* End);
 
+	UPROPERTY(EditAnywhere)
+	bool ShowGraph;
+
+	void DrawGraph();
+
 private:
 	float SquaredDistanceBetweenTwoPoints(FVector Point1, FVector Point2);
 
 	float Heuristic(FVector Point1, FVector Point2);
 
 	float CalculateCost(ANavNode* Node1, ANavNode* Node2);
+
+	void ResetNodeCostAndPredecessor();
 
 };

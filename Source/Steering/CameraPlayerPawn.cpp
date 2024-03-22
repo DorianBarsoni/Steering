@@ -1,6 +1,7 @@
 #include "CameraPlayerPawn.h"
 #include "LandscapeProxy.h"
 #include "Kismet/GameplayStatics.h"
+#include "SteeringGamemode.h"
 
 FActorSpawnParameters SpawnParams;
 
@@ -44,14 +45,26 @@ void ACameraPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ACameraPlayerPawn::CreateTarget() {
     FHitResult HitResult;
-    if (TraceLineFromCameraToMousePosition(HitResult, true)) {
+    if (TraceLineFromCameraToMousePosition(HitResult)) {
         FVector Location = HitResult.ImpactPoint;
-        TargetsSpawned.Add(GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams));
-        SetVehiculesTargets();
+        Location.Z = 380.0f;
+
+        ASteeringGamemode* SteeringGM = Cast<ASteeringGamemode>(GetWorld()->GetAuthGameMode());
+        if (SteeringGM) {
+            switch (SteeringGM->Mode) {
+                case OnePoint: {
+                    ClearTargetsSpawned();
+                    TargetsSpawned.Add(GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams));
+                    FindOnePointPath();
+                    break;
+                }
+            }
+        }
+        //SetVehiculesTargets();
     }
 }
 
-bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult, bool showHit) {
+bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult) {
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
     FVector MouseWorldPosition, MouseWorldDirection;
@@ -66,8 +79,7 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
     ObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
 
     if (GetWorld()->LineTraceSingleByObjectType(HitResult, MouseWorldPosition, Direction, ObjectParams, CollisionParams)) {
-        if (showHit && HitResult.GetActor() && HitResult.GetActor()->IsA<ALandscapeProxy>()) {
-            DrawDebugLine(GetWorld(), MouseWorldPosition, Direction, FColor::Red, true, 5.0f, 0, 0.1f);
+        if (HitResult.GetActor() && HitResult.GetActor()->IsA<ALandscapeProxy>()) {
             return true;
         }
         else {
@@ -75,6 +87,27 @@ bool ACameraPlayerPawn::TraceLineFromCameraToMousePosition(FHitResult& HitResult
         }
     }
     return false;
+}
+
+void ACameraPlayerPawn::FindOnePointPath() {
+AActor* Target = TargetsSpawned[0];
+
+    for (AVehicule* Vehicule : Vehicules) {
+        PathToFollow.Empty();
+
+        ANavNode* ClosestNodeToVehicule = NearestNode(Vehicule->GetActorLocation());
+        ANavNode* ClosestNodeToTarget = NearestNode(Target->GetTargetLocation());
+
+        TArray<ANavNode*> AStarPath = Nav->AStar(ClosestNodeToVehicule, ClosestNodeToTarget);
+        for (AActor* Node : AStarPath) {
+            PathToFollow.Add(Node);
+        }
+        PathToFollow.Add(Target);
+
+        Vehicule->reaching_target = nullptr;
+        Vehicule->TargetsToFollow = PathToFollow;
+    }
+    //PathToFollow = Nav->AStar(ClosestNode, )
 }
 
 void ACameraPlayerPawn::SetVehiculesTargets() {
@@ -123,5 +156,12 @@ ANavNode* ACameraPlayerPawn::NearestNode(FVector Location) {
 
 bool ACameraPlayerPawn::IsCloserThan(FVector Vehicule, FVector ActualNearestNode, FVector Node) {
     return FVector::DistSquared(Vehicule, Node) < FVector::DistSquared(Vehicule, ActualNearestNode);
+}
+
+void ACameraPlayerPawn::ClearTargetsSpawned() {
+    for (int32 Index = 0; Index < TargetsSpawned.Num(); Index++) {
+        TargetsSpawned[Index]->Destroy();
+    }
+    TargetsSpawned.Empty();
 }
 

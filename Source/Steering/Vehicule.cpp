@@ -12,11 +12,15 @@ AVehicule::AVehicule() : mass(1), velocity(0), max_force(10), max_speed(10) {
 void AVehicule::BeginPlay() {
 	Super::BeginPlay();
 	position = this->GetActorLocation();
+
+	SteeringGM = Cast<ASteeringGamemode>(GetWorld()->GetAuthGameMode());
 	
 }
 
 void AVehicule::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+
+	Move();
 
 }
 
@@ -146,13 +150,14 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 				break;
 			}
 		}
-		seek(reaching_target);
 
 		if (index == targets.Num() - 1) {
+			arrival(reaching_target, 1000);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100)
 				return true;
 		}
 		else {
+			seek(reaching_target);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
 				index++;
 				reaching_target = targets[index];
@@ -200,6 +205,19 @@ void AVehicule::TwoWays() {
 		}
 		else {
 			SwitchWay = !ReverseWay(TargetsToFollow);
+		}
+	}
+}
+
+void AVehicule::Move() {
+	if (SteeringGM) {
+		if (!TargetsToFollow.IsEmpty()) {
+			switch (SteeringGM->Mode) {
+				case OnePoint: {
+					OneWay(TargetsToFollow);
+					break;
+				}
+			}
 		}
 	}
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Math/Vector.h"
+#include "SteeringGamemode.h"
 #include "Vehicule.generated.h"
 
 UCLASS(Blueprintable)
@@ -30,6 +31,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor *reaching_target;
+
+	ASteeringGamemode* SteeringGM;
 
 public:
 	AVehicule();
@@ -83,4 +86,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TwoWays();
+
+	UFUNCTION(BlueprintCallable)
+	void Move();
 };
