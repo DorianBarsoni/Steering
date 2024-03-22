@@ -35,7 +35,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor *reaching_target;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int ReachingTargetIndex;
+
+
+	int OneWayIndex;
+
+	int CircuitTargetIndex;
 
 	ASteeringGamemode* SteeringGM;
 

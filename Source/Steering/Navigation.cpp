@@ -46,17 +46,6 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 		if (NodeToProcess != End) {
 			for (auto Neighbor : NodeToProcess->LinkedNodes) {
 				if (Neighbor->Cost == -1 || CalculateCost(NodeToProcess, Neighbor, End) < Neighbor->Cost) {
-
-					UE_LOG(LogTemp, Warning, TEXT("Node %s : %f"), *NodeToProcess->Name, NodeToProcess->Cost);
-	
-					UE_LOG(LogTemp, Warning, TEXT("Neighbor %s : %f"), *Neighbor->Name, Neighbor->Cost);
-
-					UE_LOG(LogTemp, Warning, TEXT("Calcul %f"), CalculateCost(NodeToProcess, Neighbor, End));
-
-					if (CalculateCost(NodeToProcess, Neighbor, End) < Neighbor->Cost) {
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Plus petit");
-					}
-					
 					Neighbor->Cost = NodeToProcess->Cost + (NodeToProcess->GetActorLocation() - Neighbor->GetActorLocation()).Size();//SquaredDistanceBetweenTwoNodes(NodeToProcess, Neighbor);
 					Neighbor->Predecesor = NodeToProcess;
 					NodesToProcess.Add(Neighbor);
@@ -88,7 +77,7 @@ float ANavigation::Heuristic(ANavNode* Node1, ANavNode* Node2) {
 }
 
 float ANavigation::CalculateCost(ANavNode* Node1, ANavNode* Node2, ANavNode* End) {
-	return Node1->Cost + SquaredDistanceBetweenTwoNodes(Node1, Node2);// + Heuristic(Node2, End);
+	return Node1->Cost + SquaredDistanceBetweenTwoNodes(Node1, Node2);//+ Heuristic(Node2, End);
 }
 
 void ANavigation::ResetNodeCostAndPredecessor() {

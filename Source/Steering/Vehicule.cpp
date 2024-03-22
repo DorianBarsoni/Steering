@@ -122,8 +122,8 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 		seek(reaching_target);
 
 		if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
-			ReachingTargetIndex++;
-			reaching_target = targets[ReachingTargetIndex % targets.Num()];
+			CircuitTargetIndex++;
+			reaching_target = targets[CircuitTargetIndex % targets.Num()];
 		}	
 	}
 }
@@ -132,10 +132,10 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 	if (!targets.IsEmpty()) {
 		if (!reaching_target) {
 			reaching_target = targets[0];
-			ReachingTargetIndex = 0;
+			OneWayIndex = 0;
 		}
 
-		if (ReachingTargetIndex == targets.Num() - 1) {
+		if (OneWayIndex == targets.Num() - 1) {
 			arrival(reaching_target, 1000);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
 				//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("OMG JE SUIS AU DEPART"));
@@ -146,8 +146,8 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 		else {
 			seek(reaching_target);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
-				ReachingTargetIndex++;
-				reaching_target = targets[ReachingTargetIndex];
+				OneWayIndex++;
+				reaching_target = targets[OneWayIndex];
 			}
 		}
 		return false;
