@@ -46,8 +46,8 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 		NodeToProcess = NodesToProcess.Pop();
 		if (NodeToProcess != End) {
 			for (auto Neighbor : NodeToProcess->LinkedNodes) {
-				if (NodeToProcess->Cost + CalculateCost(NodeToProcess, Neighbor) < Neighbor->Cost || Neighbor->Cost == -1) {
-					Neighbor->Cost = NodeToProcess->Cost + FVector::DistSquared(NodeToProcess->GetActorLocation(), Neighbor->GetActorLocation());
+				if (Neighbor->Cost == -1 || CalculateCost(NodeToProcess, Neighbor, End) < Neighbor->Cost) {
+					Neighbor->Cost = NodeToProcess->Cost + SquaredDistanceBetweenTwoNodes(NodeToProcess, Neighbor);
 					Neighbor->Predecesor = NodeToProcess;
 					NodesToProcess.Add(Neighbor);
 				}
@@ -69,17 +69,16 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 	return Path;
 }
 
-float ANavigation::SquaredDistanceBetweenTwoPoints(FVector Point1, FVector Point2) {
-	return FVector::DistSquared(Point1, Point2);
+float ANavigation::SquaredDistanceBetweenTwoNodes(ANavNode* Node1, ANavNode* Node2) {
+	return FVector::DistSquared(Node1->GetActorLocation(), Node2->GetActorLocation());
 }
 
-float ANavigation::Heuristic(FVector Point1, FVector Point2) {
-	return FVector::DistSquared(Point1, Point2);
+float ANavigation::Heuristic(ANavNode* Node1, ANavNode* Node2) {
+	return FVector::DistSquared(Node1->GetActorLocation(), Node2->GetActorLocation());
 }
 
-float ANavigation::CalculateCost(ANavNode* Node1, ANavNode* Node2) {
-	return /*Heuristic(Node1->GetActorLocation(), Node2->GetActorLocation()) +*/
-		SquaredDistanceBetweenTwoPoints(Node1->GetActorLocation(), Node2->GetActorLocation());
+float ANavigation::CalculateCost(ANavNode* Node1, ANavNode* Node2, ANavNode* End) {
+	return Node1->Cost + SquaredDistanceBetweenTwoNodes(Node1, Node2) + Heuristic(Node2, End);
 }
 
 void ANavigation::ResetNodeCostAndPredecessor() {

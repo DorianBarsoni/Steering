@@ -31,11 +31,11 @@ public:
 	void DrawGraph();
 
 private:
-	float SquaredDistanceBetweenTwoPoints(FVector Point1, FVector Point2);
+	float SquaredDistanceBetweenTwoNodes(ANavNode* Node1, ANavNode* Node2);
 
-	float Heuristic(FVector Point1, FVector Point2);
+	float Heuristic(ANavNode* Node1, ANavNode* Node2);
 
-	float CalculateCost(ANavNode* Node1, ANavNode* Node2);
+	float CalculateCost(ANavNode* Node1, ANavNode* Node2, ANavNode* End);
 
 	void ResetNodeCostAndPredecessor();
 
