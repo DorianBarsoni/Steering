@@ -47,9 +47,16 @@ public:
 
 	bool TraceLineFromCameraToMousePosition(FHitResult& HitResult);
 
-	void SetVehiculesTargets();
-
 	void FindOnePointPath();
+
+	void FindSeveralPointsPath();
+
+	void FindCircuitPath();
+
+	TArray<AActor*> GetPathBetweenTwoPoints(AActor* Point1, AActor* Point2);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangingGamemode();
 
 private:
 	ANavNode* NearestNode(FVector Location);

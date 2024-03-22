@@ -5,6 +5,8 @@
 
 FActorSpawnParameters SpawnParams;
 
+TArray<AActor*> InsertArrayNextToArray(TArray<AActor*> InsertIn, TArray<AActor*> Inserted);
+
 ACameraPlayerPawn::ACameraPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -58,9 +60,18 @@ void ACameraPlayerPawn::CreateTarget() {
                     FindOnePointPath();
                     break;
                 }
+                case SeveralPoints: {
+                    TargetsSpawned.Add(GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams));
+                    FindSeveralPointsPath();
+                    break;
+                }
+                case Circuit: {
+                    TargetsSpawned.Add(GetWorld()->SpawnActor<AActor>(TargetToSpawn, Location, FRotator::ZeroRotator, SpawnParams));
+                    FindCircuitPath();
+                    break;
+                }
             }
         }
-        //SetVehiculesTargets();
     }
 }
 
@@ -94,49 +105,60 @@ AActor* Target = TargetsSpawned[0];
 
     for (AVehicule* Vehicule : Vehicules) {
         PathToFollow.Empty();
-
-        ANavNode* ClosestNodeToVehicule = NearestNode(Vehicule->GetActorLocation());
-        ANavNode* ClosestNodeToTarget = NearestNode(Target->GetTargetLocation());
-
-        TArray<ANavNode*> AStarPath = Nav->AStar(ClosestNodeToVehicule, ClosestNodeToTarget);
-        for (AActor* Node : AStarPath) {
-            PathToFollow.Add(Node);
-        }
-        PathToFollow.Add(Target);
+        PathToFollow = GetPathBetweenTwoPoints(Vehicule, Target);
 
         Vehicule->reaching_target = nullptr;
         Vehicule->TargetsToFollow = PathToFollow;
     }
-    //PathToFollow = Nav->AStar(ClosestNode, )
 }
 
-void ACameraPlayerPawn::SetVehiculesTargets() {
-    for (auto Vehicule : Vehicules) {
-        ANavNode* ClosestNode;
-        if (PathToFollow.IsEmpty()) {
-            ClosestNode = NearestNode(Vehicule->GetActorLocation());
-        }
-        else {
-            ClosestNode = NearestNode(PathToFollow.Last()->GetActorLocation());
-        }
-         
+void ACameraPlayerPawn::FindSeveralPointsPath() {
+    PathToFollow.Empty();
 
-        //Il faut séparer le trouvage de chemin quand on ajoute un point du chemin initial
-
-        for (auto Target : TargetsSpawned) {
-            ANavNode* ClosestNodeToTarget = NearestNode(Target->GetActorLocation());
-
-            TArray<ANavNode*> AStarPath = Nav->AStar(ClosestNode, ClosestNodeToTarget);
-
-            for (AActor* Node : AStarPath) {
-                PathToFollow.Add(Node);
+    for (AVehicule* Vehicule : Vehicules) {
+        for (AActor* Target : TargetsSpawned) {
+            if (PathToFollow.IsEmpty()) {
+                PathToFollow = GetPathBetweenTwoPoints(Vehicule, Target);
             }
-            PathToFollow.Add(Target);
-
-            ClosestNode = ClosestNodeToTarget;
+            else {
+                PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), Target));
+            }
         }
-        //Vehicule->TargetsToFollow = PathToFollow;
+        Vehicule->TargetsToFollow = PathToFollow;
+        PathToFollow.Empty();
     }
+}
+
+void ACameraPlayerPawn::FindCircuitPath() {
+    PathToFollow.Empty();
+
+    for (AVehicule* Vehicule : Vehicules) {
+        for (AActor* Target : TargetsSpawned) {
+            if (PathToFollow.IsEmpty()) {
+                PathToFollow = GetPathBetweenTwoPoints(Vehicule, Target);
+            }
+            else {
+                PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), Target));
+            }
+        }
+        PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), PathToFollow[0]));
+        Vehicule->TargetsToFollow = PathToFollow;
+        PathToFollow.Empty();
+    }
+}
+
+TArray<AActor*> ACameraPlayerPawn::GetPathBetweenTwoPoints(AActor* Point1, AActor* Point2) {
+    TArray<AActor*> Path;
+    ANavNode* ClosestNodeToPoint1 = NearestNode(Point1->GetActorLocation());
+    ANavNode* ClosestNodeToPoint2 = NearestNode(Point2->GetTargetLocation());
+
+    TArray<ANavNode*> AStarPath = Nav->AStar(ClosestNodeToPoint1, ClosestNodeToPoint2);
+    for (AActor* Node : AStarPath) {
+        Path.Add(Node);
+    }
+    Path.Add(Point2);
+
+    return Path;
 }
 
 ANavNode* ACameraPlayerPawn::NearestNode(FVector Location) {
@@ -163,5 +185,21 @@ void ACameraPlayerPawn::ClearTargetsSpawned() {
         TargetsSpawned[Index]->Destroy();
     }
     TargetsSpawned.Empty();
+}
+
+void ACameraPlayerPawn::ChangingGamemode() {
+    ClearTargetsSpawned();
+    for (AVehicule* Vehicule : Vehicules) {
+        Vehicule->TargetsToFollow.Empty();
+        Vehicule->reaching_target = nullptr;
+    }
+}
+
+TArray<AActor*> InsertArrayNextToArray(TArray<AActor*> InsertIn, TArray<AActor*> Inserted) {
+    TArray<AActor*> FinalArray = InsertIn;
+    for (AActor* Element : Inserted) {
+        FinalArray.Add(Element);
+    }
+    return FinalArray;
 }
 

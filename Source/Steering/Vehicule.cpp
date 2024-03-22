@@ -123,16 +123,8 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 
 		if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
 
-			int index = -1;
-			for (int i = 0; i < targets.Num(); ++i) {
-				if (targets[i] == reaching_target) {
-					index = i;
-					break;
-				}
-			}
-			
-			index++;
-			reaching_target = targets[index % targets.Num()];
+			ReachingTargetIndex++;
+			reaching_target = targets[ReachingTargetIndex % targets.Num()];
 		}	
 	}
 }
@@ -141,17 +133,10 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 	if (!targets.IsEmpty()) {
 		if (!reaching_target) {
 			reaching_target = targets[0];
+			ReachingTargetIndex = 0;
 		}
 
-		int index = -1;
-		for (int i = 0; i < targets.Num(); ++i) {
-			if (targets[i] == reaching_target) {
-				index = i;
-				break;
-			}
-		}
-
-		if (index == targets.Num() - 1) {
+		if (ReachingTargetIndex == targets.Num() - 1) {
 			arrival(reaching_target, 1000);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100)
 				return true;
@@ -159,8 +144,8 @@ bool AVehicule::OneWay(TArray<AActor*> targets) {
 		else {
 			seek(reaching_target);
 			if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
-				index++;
-				reaching_target = targets[index];
+				ReachingTargetIndex++;
+				reaching_target = targets[ReachingTargetIndex];
 			}
 		}
 		return false;
@@ -215,6 +200,14 @@ void AVehicule::Move() {
 			switch (SteeringGM->Mode) {
 				case OnePoint: {
 					OneWay(TargetsToFollow);
+					break;
+				}
+				case SeveralPoints: {
+					OneWay(TargetsToFollow);
+					break;
+				}
+				case Circuit: {
+					circuit(TargetsToFollow);
 					break;
 				}
 			}
