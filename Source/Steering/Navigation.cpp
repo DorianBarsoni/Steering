@@ -58,14 +58,14 @@ TArray<ANavNode*> ANavigation::AStar(ANavNode* Start, ANavNode* End) {
 	ANavNode* CurrentNode = End;
 	TArray<ANavNode*> Path;
 	Path.Add(End);
-	FString Way = Path[0]->Name;
+	//FString Way = Path[0]->Name;
 	while (CurrentNode != Start) {
 		CurrentNode = CurrentNode->Predecesor;
 		Path.Insert(CurrentNode, 0);
-		Way = Path[0]->Name + " -> " + Way;
+		//Way = Path[0]->Name + " -> " + Way;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Way);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Way);
 	return Path;
 }
 

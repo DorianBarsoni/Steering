@@ -133,16 +133,15 @@ void ACameraPlayerPawn::FindCircuitPath() {
     PathToFollow.Empty();
 
     for (AVehicule* Vehicule : Vehicules) {
-        for (AActor* Target : TargetsSpawned) {
-            if (PathToFollow.IsEmpty()) {
-                PathToFollow = GetPathBetweenTwoPoints(Vehicule, Target);
-            }
-            else {
-                PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), Target));
-            }
+        for (int32 i = 0; i < TargetsSpawned.Num(); i++) {
+            PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(TargetsSpawned[i], TargetsSpawned[(i+1)%TargetsSpawned.Num()]));
         }
-        PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), PathToFollow[0]));
+        //PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), PathToFollow[0]));
+
         Vehicule->TargetsToFollow = PathToFollow;
+        Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
+        Vehicule->HasReachedFirstTarget = false;
+        Vehicule->ReachingTargetIndex = 0;
         PathToFollow.Empty();
     }
 }

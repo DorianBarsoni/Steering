@@ -122,6 +122,9 @@ void AVehicule::circuit(TArray<AActor*> targets) {
 		seek(reaching_target);
 
 		if ((GetActorLocation() - reaching_target->GetActorLocation()).Size() < 100) {
+			if (reaching_target->IsA<AVehicule>()) {
+				HasReachedFirstTarget = true;
+			}
 
 			ReachingTargetIndex++;
 			reaching_target = targets[ReachingTargetIndex % targets.Num()];
@@ -207,7 +210,12 @@ void AVehicule::Move() {
 					break;
 				}
 				case Circuit: {
-					circuit(TargetsToFollow);
+					if (HasReachedFirstTarget) {
+						circuit(TargetsToFollow);
+					}
+					else {
+						HasReachedFirstTarget = OneWay(PathToFirstTarget);
+					}
 					break;
 				}
 			}

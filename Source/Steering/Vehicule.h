@@ -30,11 +30,16 @@ public:
 	TArray<AActor*> TargetsToFollow;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<AActor*> PathToFirstTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor *reaching_target;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int ReachingTargetIndex;
 
 	ASteeringGamemode* SteeringGM;
+
+	bool HasReachedFirstTarget = false;
 
 public:
 	AVehicule();
