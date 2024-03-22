@@ -206,13 +206,7 @@ void AVehicule::Move() {
 					break;
 				}
 				case SeveralPoints: {
-					if (HasReachedFirstTarget) {
-						OneWay(TargetsToFollow);
-					}
-					else {
-						HasReachedFirstTarget = OneWay(PathToFirstTarget);
-					}
-					
+					HasReachedFirstTarget = OneWay(TargetsToFollow);
 					break;
 				}
 				case Circuit: {

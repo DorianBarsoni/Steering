@@ -117,9 +117,9 @@ void ACameraPlayerPawn::FindSeveralPointsPath() {
 
     for (AVehicule* Vehicule : Vehicules) {
         if (Vehicule->TargetsToFollow.IsEmpty()) {
-            Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
-            Vehicule->HasReachedFirstTarget = false;
             Vehicule->ReachingTargetIndex = 0;
+            TArray<AActor*> PathBetweenVehiculeAndFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
+            Vehicule->TargetsToFollow = InsertArrayNextToArray(Vehicule->TargetsToFollow, PathBetweenVehiculeAndFirstTarget);
         }
 
         if (TargetsSpawned.Num() > 1) {
@@ -133,14 +133,19 @@ void ACameraPlayerPawn::FindCircuitPath() {
     PathToFollow.Empty();
 
     for (AVehicule* Vehicule : Vehicules) {
-        for (int32 i = 0; i < TargetsSpawned.Num(); i++) {
-            PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(TargetsSpawned[i], TargetsSpawned[(i+1)%TargetsSpawned.Num()]));
+        if (Vehicule->PathToFirstTarget.IsEmpty()) {
+            Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
+            Vehicule->HasReachedFirstTarget = false;
+            Vehicule->ReachingTargetIndex = 0;
         }
 
-        Vehicule->TargetsToFollow = PathToFollow;
-        Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
-        Vehicule->HasReachedFirstTarget = false;
-        Vehicule->ReachingTargetIndex = 0;
+        if (TargetsSpawned.Num() > 1) {
+            for (int32 i = 0; i < TargetsSpawned.Num(); i++) {
+                PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(TargetsSpawned[i], TargetsSpawned[(i + 1) % TargetsSpawned.Num()]));
+                Vehicule->TargetsToFollow = PathToFollow;
+            }
+        }
+
         PathToFollow.Empty();
     }
 }
