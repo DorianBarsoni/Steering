@@ -20,5 +20,13 @@ class STEERING_API ASteeringGamemode : public AGameModeBase
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<SteeringMode> Mode;
-	
+
+	UFUNCTION(BlueprintCallable)
+	void OnePointMode();
+
+	UFUNCTION(BlueprintCallable)
+	void SeveralPointsMode();
+
+	UFUNCTION(BlueprintCallable)
+	void CircuitMode();
 };
