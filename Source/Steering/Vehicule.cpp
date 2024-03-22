@@ -199,14 +199,20 @@ void AVehicule::TwoWays() {
 
 void AVehicule::Move() {
 	if (SteeringGM) {
-		if (!TargetsToFollow.IsEmpty()) {
+		if (!TargetsToFollow.IsEmpty() || !PathToFirstTarget.IsEmpty()) {
 			switch (SteeringGM->Mode) {
 				case OnePoint: {
 					OneWay(TargetsToFollow);
 					break;
 				}
 				case SeveralPoints: {
-					OneWay(TargetsToFollow);
+					if (HasReachedFirstTarget) {
+						OneWay(TargetsToFollow);
+					}
+					else {
+						HasReachedFirstTarget = OneWay(PathToFirstTarget);
+					}
+					
 					break;
 				}
 				case Circuit: {

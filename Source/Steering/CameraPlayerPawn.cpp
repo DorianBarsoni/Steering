@@ -116,16 +116,16 @@ void ACameraPlayerPawn::FindSeveralPointsPath() {
     PathToFollow.Empty();
 
     for (AVehicule* Vehicule : Vehicules) {
-        for (AActor* Target : TargetsSpawned) {
-            if (PathToFollow.IsEmpty()) {
-                PathToFollow = GetPathBetweenTwoPoints(Vehicule, Target);
-            }
-            else {
-                PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), Target));
-            }
+        if (Vehicule->TargetsToFollow.IsEmpty()) {
+            Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
+            Vehicule->HasReachedFirstTarget = false;
+            Vehicule->ReachingTargetIndex = 0;
         }
-        Vehicule->TargetsToFollow = PathToFollow;
-        PathToFollow.Empty();
+
+        if (TargetsSpawned.Num() > 1) {
+            TArray<AActor*> PathBetweenTwoLastTargets = GetPathBetweenTwoPoints(TargetsSpawned[TargetsSpawned.Num() - 2], TargetsSpawned.Last());
+            Vehicule->TargetsToFollow = InsertArrayNextToArray(Vehicule->TargetsToFollow, PathBetweenTwoLastTargets);
+        }
     }
 }
 
@@ -136,7 +136,6 @@ void ACameraPlayerPawn::FindCircuitPath() {
         for (int32 i = 0; i < TargetsSpawned.Num(); i++) {
             PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(TargetsSpawned[i], TargetsSpawned[(i+1)%TargetsSpawned.Num()]));
         }
-        //PathToFollow = InsertArrayNextToArray(PathToFollow, GetPathBetweenTwoPoints(PathToFollow.Last(), PathToFollow[0]));
 
         Vehicule->TargetsToFollow = PathToFollow;
         Vehicule->PathToFirstTarget = GetPathBetweenTwoPoints(Vehicule, TargetsSpawned[0]);
@@ -190,7 +189,10 @@ void ACameraPlayerPawn::ChangingGamemode() {
     ClearTargetsSpawned();
     for (AVehicule* Vehicule : Vehicules) {
         Vehicule->TargetsToFollow.Empty();
+        Vehicule->PathToFirstTarget.Empty();
         Vehicule->reaching_target = nullptr;
+        Vehicule->HasReachedFirstTarget = false;
+        Vehicule->ReachingTargetIndex = 0;
     }
 }
 
