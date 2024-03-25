@@ -213,7 +213,7 @@ void AVehicule::Move() {
 						circuit(TargetsToFollow);
 					}
 					else {
-						GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Direction le départ"));
+						//GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Direction le départ"));
 						HasReachedFirstTarget = OneWay(PathToFirstTarget);
 					}
 					break;
